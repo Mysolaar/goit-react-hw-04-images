@@ -1,0 +1,23 @@
+.App {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-gap: 16px;
+    padding-bottom: 24px;
+    margin:0;
+}
+
+.requestMassage {
+    margin: auto;
+    font-size: 18px;
+}
+
+.errorMassage {
+    color: red;
+    font-size: 18px;
+}
+
+.spinier {
+    display: block;
+    margin-right: auto;
+    margin-left: auto;
+}
