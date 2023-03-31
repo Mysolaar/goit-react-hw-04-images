@@ -1,48 +1,36 @@
-import React, { Component } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import css from './Modal.module.css';
 
-export default class Modal extends Component {
-  componentDidMount() {
-    // console.log('Modal componentDidMount');
-    window.addEventListener('keydown', this.handleKeyDown);
-  }
-
-  componentWillUnmount() {
-    // console.log('Modal componentWillUnmount');
-    window.removeEventListener('keydown', this.handleKeyDown);
-  }
-
-  handleKeyDown = e => {
+const Modal = ({ onClose, children }) => {
+  const handleKeyDown = useCallback((e) => {
     if (e.code === 'Escape') {
-      // console.log('Naciśnij ESC, aby zamknąć okno modalne');
-
-      this.props.onClose();
+      onClose();
     }
-  };
+  }, [onClose]);
 
-  handleBackdropClick = event => {
-    // console.log('kliknięte w tle');
-
-    // console.log('currentTarget: ', event.currentTarget);
-    // console.log('target: ', event.target);
-
+  const handleBackdropClick = (event) => {
     if (event.currentTarget === event.target) {
-      this.props.onClose();
+      onClose();
     }
   };
 
-  render() {
-    return (
-      <div className={css.Overlay} onClick={this.handleBackdropClick}>
-        <div className={css.Modal}>
-          {this.props.children}
-        </div>
-      </div>
-    );
-  }
-}
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
+
+  return (
+    <div className={css.Overlay} onClick={handleBackdropClick}>
+      <div className={css.Modal}>{children}</div>
+    </div>
+  );
+};
 
 Modal.propTypes = {
-  closeModal: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
 };
+
+export default Modal;
