@@ -1,4 +1,4 @@
-A React application that implements an image search functionality using an API.
+# A React application that implements an image search functionality using an API.
 
 The app has several components, such as Searchbar, ImageGallery, Button, Loader, and Modal. The App component manages the state and controls the rendering of these components based on the user's interaction and the state of the app.
 
