@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import css from './App.module.css'
+import React, { useState, useEffect } from 'react';
+import css from './App.module.css';
 import api from 'components/Api/Api';
 import Button from 'components/Button/Button';
 import ImageGallery from 'components/ImageGallery/ImageGallery';
@@ -18,40 +18,27 @@ export default function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const prevQuery = name;
-    const nextQuery = name;
-
-    const prevPage = page;
-    const nextPage = page;
-
-    if (nextPage > 1) {
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: 'smooth',
-      });
-    }
-
-    if (prevQuery !== nextQuery) {
-      setQuery([]);
-      setStatus('pending');
-    }
-
-    if (prevQuery !== nextQuery || prevPage !== nextPage) {
-      api
-        .fetchQuery(nextQuery, nextPage)
-        .then(({ hits }) => {
-          const images = hits.map(({ id, webformatURL, largeImageURL, tags }) => {
-            return { id, webformatURL, largeImageURL, tags };
-          });
-          if (images.length > 0) {
-            setQuery(prevQuery => [...prevQuery, ...images]);
-            setStatus('resolved');
-          } else {
-            alert('Sorry, there are no available images. Please try again.');
-            setStatus('idle');
-          }
-        })
-        .catch(error => setError(error));
+    const fetchImages = async () => {
+      try {
+        setStatus('pending');
+        const { hits } = await api.fetchQuery(name, page);
+        const images = hits.map(({ id, webformatURL, largeImageURL, tags }) => {
+          return { id, webformatURL, largeImageURL, tags };
+        });
+        if (images.length > 0) {
+          setQuery(prevQuery => [...prevQuery, ...images]);
+          setStatus('resolved');
+        } else {
+          alert('Sorry, there are no available images. Please try again.');
+          setStatus('idle');
+        }
+      } catch (error) {
+        setError(error);
+        setStatus('rejected');
+      }
+    };
+    if (name !== '') {
+      fetchImages();
     }
   }, [name, page]);
 
@@ -60,20 +47,20 @@ export default function App() {
       setName(newQuery);
       setPage(1);
       setStatus('pending');
+      setQuery([]);
     }
   };
 
   const handleClickImg = event => {
     const imgForModal = event.target.dataset.src;
     const altForModal = event.target.alt;
+    setShowModal(true);
     setModalImg(imgForModal);
     setModalAlt(altForModal);
-    setShowModal(true);
   };
 
   const handleClickBtn = () => {
-    setPage(page + 1);
-    setStatus('pending');
+    setPage(prevPage => prevPage + 1);
   };
 
   const toggleModal = () => {
@@ -98,6 +85,10 @@ export default function App() {
     );
   }
 
+  if (status === 'rejected') {
+    return <h1>{error.message}</h1>;
+  }
+
   if (status === 'resolved') {
     return (
       <>
@@ -114,26 +105,4 @@ export default function App() {
       </>
     );
   }
-
-if (status === 'resolved') {
-      return (
-        <>
-        {showModal && (
-          <Modal onClose={toggleModal}>
-            <img src={modalImg} alt={modalAlt} />
-          </Modal>
-        )}
-        <div>
-          <Searchbar onSubmit={handleSubmitInput} />
-          <ImageGallery onClickImg={handleClickImg} query={query} />
-          <Button handleClickBtn={handleClickBtn} />
-        </div>
-      </>
-    );
-  }
-
-   if (status === 'rejected') {
-    return <h1>{error.message}</h1>;
-    }
 }
-
